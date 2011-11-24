@@ -1,0 +1,11 @@
+target/
+*.iml
+.ropeproject/
+.idea
+.#*
+\#*
+.DS_Store
+lib/
+classes/
+*.jar
+.lein-deps-sum
