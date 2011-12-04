@@ -1,28 +1,11 @@
 (ns i601-project.strings
     (:use [i601-project.utils]))
 
-
-
 (defn bin-string
   "Generates a 0 padded binary string from the given Integer to fit.
   Padding matches the width set by the maximum Integer."
   [x max]
   (pad (Integer/toString x 2) (count (Integer/toString max 2))))
-
-
-;; 6 elements, 2 branching
-;; 8 total.
-;; 000 001 010 011 100 101 110 111
-(def alphabet "NR+-<>[]")
-(def binmap (zipmap (for [x (range 0 (count alphabet))] (bin-string x (dec (count alphabet)))) alphabet))
-(def revmap (map-invert binmap))
-;;revmap
-;;{\N "000", \R "001", \+ "010", \- "011", \< "100", \> "101", \[ "110", \] "111"}
-;;binmap
-;;{"111" \], "110" \[, "101" \>, "100" \<, "011" \-, "010" \+, "001" \R, "000" \N}
-
-;;
-;; Bracket Stuff
 
 ;;  s - string to pull unbalanced chars from.
 ;; 

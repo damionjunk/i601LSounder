@@ -62,6 +62,12 @@
   [m f nchildren eap]
   (repeatedly nchildren #(make-baby m f eap)))
 
-(defn breed-lsystems
+(defn breed-bin-lsystems
   [m f nchildren eap]
   (map #(bins-to-lsys (:bmap eap) (:bs-len eap) %) (breed-to-bin m f nchildren eap)))
+
+(defn breed-lsystems
+  ""
+  [m f nc eap]
+  (for [x (breed-bin-lsystems (lsys-to-bins revmap m) (lsys-to-bins revmap f) nc eap)]
+    x))
