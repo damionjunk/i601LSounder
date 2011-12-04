@@ -3,6 +3,8 @@
   (:use [i601-project.core]
         [i601-project.strings]
         [i601-project.utils]
+        [i601-project.evalgo]
+        [i601-project.lsystem]
         [overtone.live :only (stop)]))
 
 (def alphabet "NR+-<>[]")
@@ -20,22 +22,34 @@
                          \N "N-N++N-N"
                          }})
 
-(def tweedle-boop {:v "RN+-" :omega "NRNNRR"
+(def tweedle-boop {:v "RN+-[]" :omega "NRNNRR"
                    :productions {
                                  \N "N++[-----------N]N"
                                  \R "RR[R+++NRN]--"
                                  }})
 
-(def tocker {:v "RN+-" :omega "++N--"
+(def tocker {:v "RN+-[]" :omega "++N--"
              :productions {
                            \N "R[+++++N]NN[-----R]R"
                            \R "[-----NR+++N]"
                            }})
 
+(def cosmo {:v "RN+-<>[]" :omega ">N++N<--N"
+              :productions {
+                            \N "N++RN"
+                            \R "RN---"
+                            \> "N>>"
+                            \< "R<<"
+                            \+ "++"
+                            \- "--"
+                            }})
+;;(play-it (apply str (lsys-run 2 cosmo)))
+
+
 ;; REPL / Evo-Algs
 ;;(play-it (apply str (lsys-run 3 koch)))
 ;;(play-it (apply str (lsys-run 3 tweedle-boop)))
-;;(play-it (apply str (lsys-run 3 tocker)))
+;;(play-it (apply str (lsys-run 2 tocker)))
 ;;(stop)
 
 
@@ -45,19 +59,19 @@
 ;; Parent Generation using "Tocker" and "Tweedle-Boop"
 (play-from-gen :pos 1 :pop [tocker tweedle-boop] :ls-gens 3)
 ;; Breed the two
-(def gen1 (breed-lsystems tocker tweedle-boop 9 eap))
+(def gen1 (breed-lsystems tocker tweedle-boop 9 eap revmap))
 ;;
 ;; Experiment / Listen
 (play-from-gen :pos 8 :pop gen1 :ls-gens 3)
 (nth gen1 8)
 (nth gen1 4)
 ;;
-;; Breed Digger with Tocker
-(def gen2 (breed-lsystems tocker (nth gen1 8) 9 eap))
-(play-from-gen :pos 1 :pop gen2 :ls-gens 3)
+;; Breed #8 with Tocker -- Each you re-create gen1, you'll have
+;; different results... Sometimes horrible ones!
+(def gen2 (breed-lsystems tocker (nth gen1 5) 9 eap revmap))
+(play-from-gen :pos 8 :pop gen2 :ls-gens 3)
 (nth gen2 1)
-
-
+(stop)
 
 ;; Some of the interesting L-Systems
 ;;

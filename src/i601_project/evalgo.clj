@@ -68,6 +68,6 @@
 
 (defn breed-lsystems
   ""
-  [m f nc eap]
+  [m f nc eap revmap]
   (for [x (breed-bin-lsystems (lsys-to-bins revmap m) (lsys-to-bins revmap f) nc eap)]
     x))
