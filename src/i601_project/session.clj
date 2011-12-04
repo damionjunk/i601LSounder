@@ -87,7 +87,8 @@
 ;; {:omega "NRNNRR", :productions {\N "N++[-----------N]N", \R "RR[R+++NRN]--"}, :v "RN+-"}
 
 ;; (EA) "Digger"
-;; {:v "RN+-", :omega "++N-RR", :productions {\R "[-----NR++]--", \N "R[+++++N]NN[---N]N"}}
+;; (def digger  {:v "RN+-", :omega "++N-RR", :productions {\R "[-----NR++]--", \N "R[+++++N]NN[---N]N"}})
+;; (play-it (apply str (lsys-run 3 digger)))
 
 ;; (EA) Water-Tock
 ;; {:v "RN+-", :omega "++N-RR", :productions {\R "[-----NR+++N-]", \N "R[+++++N]NN[---N]N"}}
