@@ -1,119 +1,65 @@
-(ns i601-project.lsystem)
+(ns i601-project.lsystem
+  (:use [i601-project.strings]
+        [i601-project.utils]))
 
-(defn pad
-  [num len]
-  (if (> len (.length (str num)))
-    (pad (str 0 num) len)
-    (str num)))
-
-(defn bin-string
-  "Generates a 0 padded binary string from the given Integer to fit.
-  Padding matches the width set by the maximum Integer."
-  [x max]
-  (pad (Integer/toString x 2) (count (Integer/toString max 2))))
-
-;; Swap keys and values.
-(defn map-invert [m] (reduce #(assoc %1 (val %2) (key %2)) {} binmap))
-
-(defn parse-int [s]
-  (Integer. (re-find #"[0-9]*" s)))
-
-
-
-;; 6 elements, 2 branching
-;; 8 total.
-;; 000 001 010 011 100 101 110 111
-(def alphabet "NR+-<>[]")
-(def binmap (zipmap (for [x (range 0 (count alphabet))] (bin-string x (dec (count alphabet)))) alphabet))
-(def revmap (map-invert binmap))
-;;revmap
-;;{\N "000", \R "001", \+ "010", \- "011", \< "100", \> "101", \[ "110", \] "111"}
-;;binmap
-;;{"111" \], "110" \[, "101" \>, "100" \<, "011" \-, "010" \+, "001" \R, "000" \N}
-
-
-(defn bins-vec
-  [num-elems bin-map]
-  ;; generate 'num-elems' elements from the binmap.
-  ;; bracketing syntax may not be correct here.
-  (reduce #(conj %1 (bin-string (parse-int (str %2)) (dec (count bin-map)))) []
-          (loop [pos num-elems bstr ""]
-            (if (pos? pos)
-              (recur
-               (dec pos)
-               (str (rand-int (count bin-map)) bstr))
-              bstr))
-          ))
-;;(bins-vec 5 binmap)
-;;["001" "111" "000" "100" "100"]
-
-(defn bins-seq [n binmap]
-  (repeatedly n #(bin-string (rand-int (count binmap)) (dec (count binmap)))))
-;;(bins-seq 5 binmap)
-;;("001" "100" "110" "111" "101")
-
-
-(defn n-bins-vecs
-  "Provides an n element seq of binary string vectors."
-  [n maxt binmap]
-  (take n (repeatedly #(bins-vec (inc (rand-int maxt)) binmap))))
-
-  ;;
-  (n-bins-vecs 2 3 binmap)
-;; (["100" "100" "010"] ["001" "101"])
-
-
-
-
-
-(defn gen-lsys-genotype
-  [olen maxp bsmap]
-  (let [alphabet (reduce #(conj %1 (key %2)) [] bsmap)
-        initial (repeatedly (inc (rand-int olen)) #(rand-nth (keys bsmap)))]
-    {:v alphabet
-     :omega (vec initial)
-     :productions (reduce (fn [m k] (assoc m k (vec (bins-seq (inc (rand-int maxp)) bsmap)))) {} alphabet)
+;; Method to generate a random L-System based on the
+;; provided parameters.
+;;
+;; - alen The max axiom length
+;; - rmap The key to binstring map of the desired alphabet
+;; - prodkeys A string representing the keys we want to allow
+;;            production rule generation for
+;; - plen The max production rule length
+(defn genr-lsystem
+  "Returns a 'randomly' generated L-System."
+  [{:keys [alen rmap prodkeys plen]}]
+  (let [alphabet (vec (keys rmap))
+        axiom (rand-bal-string alen (keys rmap))]
+    {:v (apply str alphabet)
+     :omega axiom
+     :productions (reduce
+                   (fn [agm k]
+                     (assoc agm k (rand-bal-string plen alphabet)))
+                   {}
+                   prodkeys)
      }))
 
-;; Maps from binstrings to production characters
-;;
-(defn gen-lsys-phenotype
-  [geno bsmap]
-  {:v (vec (for [x (geno :v)] (bsmap x)))
-   :omega (vec (for [x (geno :omega)] (bsmap x)))
-   :productions (reduce (fn [m [k v]] (assoc m (bsmap k) (for [x v] (bsmap x)))) {} (geno :productions))
+(defn lsys-to-bins
+  "Returns a binary string version of the provided L-System map."
+  [rmap {:keys [v omega productions]}]
+  {:v (apply str (xlate-map v rmap))
+   :omega (apply str (xlate-map omega rmap))
+   :productions (reduce
+                 (fn [agm [k v]]
+                   (assoc agm (rmap k) (apply str (xlate-map v rmap))))
+                 {}
+                 productions)
+   })
+;;(lsys-to-bins revmap (genr-lsystem {:alen 5 :rmap revmap :prodkeys "NR+-<>" :plen 7}))
+
+(defn bins-to-lsys
+  "Returns our standard L-System from the provided binary string representation."
+  [rmap clen {:keys [v omega productions]}]
+  {:v (apply str (xlate-map (bchunked v clen) rmap))
+   :omega (str-b-balance (apply str (xlate-map (bchunked omega clen) rmap)))
+   :productions (reduce
+                 (fn [agm [k v]]
+                   (assoc agm (rmap k) (str-b-balance (apply str (xlate-map (bchunked v clen) rmap)))))
+                 {}
+                 productions)
    })
 
-;;(gen-lsys-phenotype (gen-lsys-genotype 3 3 binmap) binmap)
-;; {:v [\] \[ \> \< \- \+ \R \N],
-;;  :omega [\[ \< \]],
-;;  :productions {\] (\[ \<),
-;;                \[ (\]),
-;;                \> (\N \R),
-;;                \< (\> \+ \>),
-;;                \- (\N),
-;;                \+ (\[ \[ \<),
-;;                \R (\[), \N (\>)}}
+;; Runs the L-System generator. Uses reduce + (range generations)
+;; to control the number of generations.
+(defn lsys-run
+  "Returns the results of running the L-System for the specified number of generations."
+  [generations {:keys [v omega productions]}]
+  (reduce
+   (fn [st n] (mapcat productions st))
+   omega
+   (range generations)))
 
-
-;;(gen-lsys-genotype 3 3 binmap)
-;; {:v ["111" "110" "101" "100" "011" "010" "001" "000"],
-;;  :omega ["010" "110"],
-;;  :productions {
-;;      "000" ["110" "110"],
-;;      "001" ["000" "011" "000"],
-;;      "010" ["101" "101" "111"],
-;;      "011" ["001" "001" "011"],
-;;      "100" ["000" "011" "101"],
-;;      "101" ["011"],
-;;      "110" ["101" "000"],
-;;      "111" ["011"] }}
-
-(defn D0L-system
-  ""
-  [productions pos omega]
-  (loop [d pos s omega]
-    (if (zero? d)
-      s
-      (recur (dec d) (mapcat productions s)))))
-
+;;(lsys-run 3 {:v "NR" :omega "NR" :productions {\N "NN" \R "RR"}})
+;;=> (\N \N \N \N \N \N \N \N \R \R \R \R \R \R \R \R)
+;;(lsys-run 0 (genr-lsystem {:alen 5 :rmap revmap :prodkeys "NR+-<>" :plen 7}))
+;;=> "-N"

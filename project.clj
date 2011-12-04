@@ -2,4 +2,6 @@
   :description "Project for i601 - Bioinspired Computing"
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [overtone "0.5.0"]
-                 [org.clojure/tools.cli "0.2.1"]])
+                 [org.clojure/tools.cli "0.2.1"]
+                 [incanter "1.3.0-SNAPSHOT"]]
+  :dev-dependencies [[lein-marginalia "0.6.1"]])
