@@ -18,7 +18,7 @@
             (if (= ch ls)
               (conj v ch)
               (if (= ch rs)
-                (if (= \[ (peek v))
+                (if (= ls (peek v))
                   (pop v)
                   (conj v ch))
                 v)))
