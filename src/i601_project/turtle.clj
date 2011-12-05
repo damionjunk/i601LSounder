@@ -24,29 +24,27 @@
 (defn push-state
   ""
   [turtle]
-  (let [stack (:stack @turtle)
-        state {:note (:note @turtle)
-               :dur (:dur @turtle)
-               :pos (:pos @turtle)
-               :bpm (:bpm @turtle)
-               :time (:time @turtle)}]
-    (dosync (alter turtle merge {:stack (conj stack state)}))))
+  (dosync  (let [stack (:stack @turtle)
+                 state (select-keys @turtle [:note :dur :pos :bpm :time])]
+             (alter turtle merge {:stack (conj stack state)}))))
 
 (defn pop-state
   ""
   [turtle]
-  (let [stack (:stack @turtle)]
-    (if-let [state (peek stack)]
-      (dosync (alter turtle merge {:stack (pop stack)} state))
-      @turtle)))
+  (dosync
+   (let [stack (:stack @turtle)]
+     (if-let [state (peek stack)]
+       (alter turtle merge {:stack (pop stack)} state)
+       @turtle))))
 
 (defn note-fn
   ""  
   [f turtle notes]
-  (let [note (:note @turtle) pos (:pos @turtle)]
-    (if notes
-      (dosync (alter turtle merge {:note (nth notes (mod (f pos) (count notes))) :pos (f pos)}))
-      (dosync (alter turtle merge {:note (f note)})))))
+  (dosync
+   (let [note (:note @turtle) pos (:pos @turtle)]
+     (if notes
+       (alter turtle merge {:note (nth notes (mod (f pos) (count notes))) :pos (f pos)})
+       (alter turtle merge {:note (f note)})))))
 
 (defn note-up
   ""
@@ -61,8 +59,8 @@
 (defn dur-fn
   ""
   [f turtle]
-  (let [dur (:dur @turtle)]
-    (dosync (alter turtle merge {:dur (f dur)}))))
+  (dosync (let [dur (:dur @turtle)]
+            (alter turtle merge {:dur (f dur)}))))
 
 (defn dur-up
   ""
@@ -75,20 +73,17 @@
 (defn t-note
   ""
   [turtle]
-  (let [time (:time @turtle)
-        t-up (dur-to-seconds (:bpm @turtle) (:dur @turtle))
-        notes (:notes-stack @turtle)
-        notem {:note (:note @turtle)
-               :dur-secs t-up
-               :dur (:dur @turtle)
-               :time (:time @turtle)}]
-    (dosync (alter turtle merge {:time (+ time t-up) :notes-stack (conj notes notem)}))))
+  (dosync (let [time (:time @turtle)
+                t-up (dur-to-seconds (:bpm @turtle) (:dur @turtle))
+                notes (:notes-stack @turtle)
+                notem (merge {:dur-secs t-up} (select-keys @turtle [:note :dur :time]))]
+            (alter turtle merge {:time (+ time t-up) :notes-stack (conj notes notem)}))))
 
 (defn t-rest
   ""
   [turtle]
-  (let [time (:time @turtle) dur (:dur @turtle) bpm (:bpm @turtle)]
-    (dosync (alter turtle merge {:time (+ time (dur-to-seconds bpm dur))}))))
+  (dosync (let [time (:time @turtle) dur (:dur @turtle) bpm (:bpm @turtle)]
+            (alter turtle merge {:time (+ time (dur-to-seconds bpm dur))}))))
 
 ;;
 ;;

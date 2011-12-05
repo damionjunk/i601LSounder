@@ -5,7 +5,9 @@
         [i601-project.utils]
         [i601-project.evalgo]
         [i601-project.lsystem]
-        [overtone.live :only (stop)]))
+        [overtone.live]))
+;;        [overtone.live :only (stop start-recording stop-recording)]
+
 
 (def alphabet "NR+-<>[]")
 (def binmap (zipmap (for [x (range 0 (count alphabet))] (bin-string x (dec (count alphabet)))) alphabet))
@@ -34,22 +36,28 @@
                            \R "[-----NR+++N]"
                            }})
 
-(def cosmo {:v "RN+-<>[]" :omega ">N++N<--N"
-              :productions {
-                            \N "N++RN"
-                            \R "RN---"
-                            \> "N>>"
-                            \< "R<<"
-                            \+ "++"
-                            \- "--"
-                            }})
-;;(play-it (apply str (lsys-run 2 cosmo)))
+(def descending-moon {:v "RN+-<>[]"
+                      :omega ">>>[-----N][++N][++++++N][<<<NR]"
+                      :productions {
+                                    \N "RN++NN----N"
+                                    \R "RR"
+                                    \> ">"
+                                    \< "<"
+                                    \+ "+"
+                                    \- "-"
+                                    \[ "["
+                                    \] "]"
+                                    }})
 
+;;(start-recording "~/Desktop/descending-moon.wav")
+;;(play-it (apply str (lsys-run 3 descending-moon)))
+;;(stop)
+;;(stop-recording)
 
 ;; REPL / Evo-Algs
 ;;(play-it (apply str (lsys-run 3 koch)))
 ;;(play-it (apply str (lsys-run 3 tweedle-boop)))
-;;(play-it (apply str (lsys-run 2 tocker)))
+;;(play-it (apply str (lsys-run 3 tocker)))
 ;;(stop)
 
 

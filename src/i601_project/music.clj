@@ -8,6 +8,7 @@
 (definst tone [note 60 amp 0.3 dur 0.4]
   (let [snd (sin-osc (midicps note))
         env (env-gen (perc 0.01 dur) :action FREE)]
+    ;(out 10)
     (* env snd amp)))
 
 (definst squarez [note 60 amp 0.3 dur 0.4 width 0.5]
@@ -17,4 +18,4 @@
 (defn tp
   [tick stack]
   (for [sn stack]
-    (at (metro (+ (:time sn) tick)) (tone (:note sn) 1 (:dur-secs sn)))))
+    (at (metro (+ (:time sn) tick)) (tone (:note sn) 0.7 (:dur-secs sn)))))
